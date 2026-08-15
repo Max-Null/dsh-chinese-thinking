@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Injects one system-prompt section so a DeepSeek Harness agent thinks and replies in Chinese",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
