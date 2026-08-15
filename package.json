@@ -1,6 +1,6 @@
 {
   "name": "@max-null/dsh-chinese-thinking",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Injects one system-prompt section so a DeepSeek Harness agent thinks and replies in Chinese",
   "license": "MIT",
   "publishConfig": {
@@ -13,15 +13,24 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml"
   },
   "files": [
-    "dist"
+    "dist",
+    "cordis.patch.yml"
   ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
   "keywords": [
     "deepseek",
     "harness",
     "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
     "plugin",
     "chinese",
     "prompt",

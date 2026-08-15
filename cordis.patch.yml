@@ -1,0 +1,6 @@
+# dsh-chinese-thinking bundle patch: one insert over the profile root.
+# `system-prompt` already lives in the host (dsh-base); this adds only the
+# chinese-thinking section.
+- insert:
+    - id: chinese-thinking
+      name: '@max-null/dsh-chinese-thinking'

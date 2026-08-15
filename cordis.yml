@@ -1,8 +1,0 @@
-# Example composition. system-prompt is already in the host; you add only the
-# final entry.
-
-- id: system-prompt
-  name: '@deepseek-ai/dsh-system-prompt'
-
-- id: chinese-thinking
-  name: '@max-null/dsh-chinese-thinking'
