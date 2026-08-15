@@ -16,7 +16,8 @@ export const PROMPT_TEXT = '始终使用中文进行思考和回复，无论用�
 export function apply(ctx: Context): void {
   ctx.systemPrompt.section({
     name: 'chinese-thinking',
-    order: 150,
+    // Before the deployment persona so the instruction is read first every turn.
+    order: -90,
     text: PROMPT_TEXT,
   })
 }

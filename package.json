@@ -1,6 +1,6 @@
 {
   "name": "@max-null/dsh-chinese-thinking",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Injects one system-prompt section so a DeepSeek Harness agent thinks and replies in Chinese",
   "license": "MIT",
   "publishConfig": {

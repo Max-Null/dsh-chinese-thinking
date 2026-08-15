@@ -26,7 +26,7 @@ npm install @max-null/dsh-chinese-thinking
 ```ts
 ctx.systemPrompt.section({
   name: 'chinese-thinking',
-  order: 150,   // 工具指引段（100–199），稳定、前缀安全
+  order: -90,   // persona 之前（身份声明 -100 之后），每轮最先读到
   text: '始终使用中文进行思考和回复，无论用户使用什么语言。',
 })
 ```
