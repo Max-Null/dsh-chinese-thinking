@@ -25,7 +25,7 @@ This plugin belongs to the **`@max-null/*` family** — a set of plugins that to
 npm install @max-null/dsh-chinese-thinking
 ```
 
-在你的 `cordis.yml` 加一条（`system-prompt` 由宿主已有）：
+在你的 `cordis.patch.yml` 加一条（`system-prompt` 由宿主已有）：
 
 ```yaml
 - id: chinese-thinking
@@ -37,7 +37,7 @@ npm install @max-null/dsh-chinese-thinking
 ```ts
 ctx.systemPrompt.section({
   name: 'chinese-thinking',
-  order: -90,   // persona 之前（身份声明 -100 之后），每轮最先读到
+  order: -90,   // 身份声明（-100）之后、persona（0）之前——行为指令中排位最靠前
   text: '始终使用中文进行思考和回复，无论用户使用什么语言。',
 })
 ```
