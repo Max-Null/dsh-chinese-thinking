@@ -1,0 +1,54 @@
+# 发布 @max-null/dsh-jubensha 到 npm。
+#
+# 只开 workflow_dispatch —— 发布的控制点保持在「人主动触发一次」。
+# 链路稳定后再考虑加 `push: tags: ['v*']`：那会把控制点从「执行 publish」
+# 挪到「打 tag」，与手册铁律 9（npm publish 由用户手动）的措辞要一起改写。
+#
+# 需要仓库 secret：NPM_TOKEN（granular access token，限本包、带 publish 权限）。
+name: publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: '只跑构建与测试，不发布'
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    # 钉版本而不是 ubuntu-latest：2026-10-19 起 latest 迁到 Ubuntu 26，
+    # 发布链路不该被基础镜像的自动迁移带走。
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v6
+        with:
+          # Trusted Publishing 要求 npm >= 11.5.1，Node 24 起自带。
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      # 本地已用同一条命令预演过：lockfile 与 package.json 同步，装完即为干净树。
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm run typecheck
+
+      - run: pnpm test
+
+      # dry-run 也覆盖构建：publish 时 prepublishOnly 会再跑一次，幂等。
+      - run: pnpm run build
+
+      # prepublishOnly 会再 build 一次（npm publish 的既有行为），产物与测试都来自同一次运行。
+      # 凭据来自 OIDC（npm 侧的 Trusted Publisher 绑定本仓 + 本 workflow），不再用长期 token。
+      - name: publish
+        if: ${{ inputs.dry-run != true }}
+        run: npm publish --provenance --access public
