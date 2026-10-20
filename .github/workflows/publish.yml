@@ -1,10 +1,11 @@
-# 发布 @max-null/dsh-jubensha 到 npm。
+# 发布 @max-null/dsh-chinese-thinking 到 npm，并在同一 commit 上打 tag、建 GitHub Release。
 #
 # 只开 workflow_dispatch —— 发布的控制点保持在「人主动触发一次」。
-# 链路稳定后再考虑加 `push: tags: ['v*']`：那会把控制点从「执行 publish」
-# 挪到「打 tag」，与手册铁律 9（npm publish 由用户手动）的措辞要一起改写。
+# 一个触发点做三件事：npm publish → 打 `v<version>` tag → 建 Release。
+# 顺序即保护：publish 失败时后面的步骤不执行，不会留下「有 tag 没包」的版本。
 #
-# 需要仓库 secret：NPM_TOKEN（granular access token，限本包、带 publish 权限）。
+# 凭据：npm 走 OIDC Trusted Publishing（npm 侧绑定本仓 + 本 workflow）；
+# tag / Release 用 github.token（permissions.contents: write），都不需要仓库 secret。
 name: publish
 
 on:
@@ -21,7 +22,7 @@ jobs:
     # 发布链路不该被基础镜像的自动迁移带走。
     runs-on: ubuntu-24.04
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -52,3 +53,31 @@ jobs:
       - name: publish
         if: ${{ inputs.dry-run != true }}
         run: npm publish --provenance --access public
+
+      # tag 与 Release 各自幂等：已存在就跳过，不覆盖已有指向（重复运行要失败可见，
+      # 而不是把 tag 悄悄挪到另一个 commit）。Release notes 取自 CHANGELOG 的同版本段；
+      # 没有对应段（或没有 CHANGELOG）时退回 GitHub 自动生成的 notes。
+      - name: tag and release
+        if: ${{ inputs.dry-run != true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v$VERSION"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "tag $TAG already exists — skipping tag push"
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
+          node scripts/release-notes.mjs "$VERSION" > /tmp/release-notes.md
+          if [ -s /tmp/release-notes.md ]; then
+            NOTES=(--notes-file /tmp/release-notes.md)
+          else
+            NOTES=(--generate-notes)
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "release $TAG already exists — skipping release create"
+          else
+            gh release create "$TAG" --title "$TAG" "${NOTES[@]}"
+          fi
